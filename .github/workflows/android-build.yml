@@ -1,5 +1,5 @@
 
-name: SmartPlate AI - Android APK Build
+name: Build SmartPlate AI APK
 
 on:
   push:
@@ -28,13 +28,20 @@ jobs:
       - name: Set Up Gradle
         uses: gradle/actions/setup-gradle@v4
 
+      - name: Grant Execute Permission
+        run: chmod +x gradlew
+
+      - name: Clean Project
+        run: ./gradlew clean
+
       - name: Build Debug APK
-        run: gradle assembleDebug
+        run: ./gradlew assembleDebug --stacktrace
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
+        if: success()
         with:
           name: SmartPlate-AI-APK
           path: app/build/outputs/apk/debug/*.apk
-          if-no-files-found: error
+          retention-days: 7
 

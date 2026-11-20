@@ -12,11 +12,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    # Uncomment and update if your Android project is inside a subfolder (e.g., android or app)
-    # defaults:
-    #   run:
-    #     working-directory: android
-
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -28,13 +23,28 @@ jobs:
           distribution: 'temurin'
           cache: 'gradle'
 
+      - name: Ensure debug.keystore exists
+        run: |
+          if [ ! -f "debug.keystore" ]; then
+            echo "debug.keystore not found, generating a temporary one..."
+            keytool -genkeypair \
+              -v \
+              -keystore debug.keystore \
+              -storepass android \
+              -alias androiddebugkey \
+              -keypass android \
+              -keyalg RSA \
+              -keysize 2048 \
+              -validity 10000 \
+              -dname "CN=Android Debug,O=Android,C=US"
+          fi
+
       - name: Grant Execute Permission & Build Debug APK
         run: |
           if [ -f "./gradlew" ]; then
             chmod +x ./gradlew
             ./gradlew clean assembleDebug
           else
-            echo "gradlew not found in current directory, using system gradle..."
             gradle clean assembleDebug
           fi
 
@@ -43,4 +53,3 @@ jobs:
         with:
           name: SmartPlate-AI-debug-apk
           path: "**/*.apk"
-          
